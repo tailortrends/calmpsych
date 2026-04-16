@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --color-primary: #516a5b;
+  --color-primary-dim: #465e4f;
+  --color-primary-container: #cee9d6;
+  
+  --color-secondary: #4a6976;
+  --color-secondary-dim: #3e5d6a;
+  --color-secondary-container: #c7e8f7;
+
+  --color-tertiary: #905262;
+  --color-tertiary-dim: #824656;
+  --color-tertiary-container: #f3a6b8;
+
+  --color-surface: #fffcf7;
+  --color-surface-container-low: #fcf9f3;
+  --color-surface-container: #f6f3ec;
+  --color-surface-container-high: #f0eee6;
+  --color-surface-container-highest: #eae8e0;
+  
+  --color-on-surface: #383833;
+  --color-on-surface-variant: #65655e;
+  
+  --color-outline: #81817a;
+  --color-outline-variant: #bbb9b2;
+
+  --color-error: #af3d3b;
+  --color-error-container: #fa746f;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+}
+
+.font-serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+.glass-panel {
+  @apply bg-surface/80 backdrop-blur-xl;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
