@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
+import { CALM_PSYCH_LOGO } from "@/src/constants";
+
 const navItems = [
   { icon: Calendar, label: "Today's Schedule", href: "/" },
   { icon: FolderHeart, label: "Patient Records", href: "/patients" },
@@ -26,9 +28,19 @@ const navItems = [
 export function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low py-8 z-40 border-r border-outline-variant/10">
-      <div className="px-8 mb-12">
-        <h1 className="font-serif text-2xl italic text-primary">Calm Psych</h1>
-        <p className="font-sans font-medium text-[10px] text-on-surface/40 uppercase tracking-[0.2em] mt-1">Clinician Portal</p>
+      <div className="px-8 mb-12 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+          <img 
+            src={CALM_PSYCH_LOGO} 
+            alt="Calm Psych Logo" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div>
+          <h1 className="font-serif text-xl italic text-primary leading-tight">Calm Psych</h1>
+          <p className="font-sans font-medium text-[8px] text-on-surface/40 uppercase tracking-[0.2em]">Clinician Portal</p>
+        </div>
       </div>
 
       <nav className="flex-grow flex flex-col space-y-1">

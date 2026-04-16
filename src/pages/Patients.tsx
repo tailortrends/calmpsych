@@ -15,12 +15,13 @@ import { cn } from "@/src/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import PatientDetailContent from "../components/PatientDetailContent";
+import { DEFAULT_PROFILE_PIC } from "@/src/constants";
 
 const patients = [
   { id: 1, name: "Julianna Abbott", age: 28, lastSession: "Oct 24, 2023", sessions: 12, status: "active", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100&h=100" },
   { id: 2, name: "Marcus Thorne", age: 34, lastSession: "Oct 23, 2023", sessions: 8, status: "active", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100&h=100" },
   { id: 3, name: "Elena Rodriguez", age: 42, lastSession: "Oct 22, 2023", sessions: 24, status: "active", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=100&h=100" },
-  { id: 4, name: "James Wilson", age: 31, lastSession: "Oct 15, 2023", sessions: 5, status: "on-hold", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100&h=100" },
+  { id: 4, name: "James Wilson", age: 31, lastSession: "Oct 15, 2023", sessions: 5, status: "on-hold", image: "" },
   { id: 5, name: "Sarah Miller", age: 26, lastSession: "Oct 12, 2023", sessions: 15, status: "active", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100" },
   { id: 6, name: "David Chen", age: 39, lastSession: "Sep 28, 2023", sessions: 3, status: "discharged", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100&h=100" },
 ];
@@ -198,7 +199,7 @@ export default function Patients() {
               <div className="relative mb-6">
                 <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-primary/5 group-hover:ring-primary/20 transition-all">
                   <img 
-                    src={patient.image} 
+                    src={patient.image || DEFAULT_PROFILE_PIC} 
                     alt={patient.name} 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
@@ -287,7 +288,7 @@ export default function Patients() {
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden">
                     <img 
-                      src={patients.find(p => p.id === selectedPatientId)?.image} 
+                      src={patients.find(p => p.id === selectedPatientId)?.image || DEFAULT_PROFILE_PIC} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />

@@ -19,6 +19,7 @@ interface TemplateField {
   id: string;
   label: string;
   placeholder: string;
+  required?: boolean;
 }
 
 interface NoteTemplate {
@@ -235,23 +236,37 @@ export default function NoteTemplates() {
                           axis="y" 
                           values={selectedTemplate.fields} 
                           onReorder={(newFields) => setSelectedTemplate({...selectedTemplate, fields: newFields})}
-                          className="space-y-4"
+                          className="space-y-4 min-p-4"
                         >
                           {selectedTemplate.fields.map((field, idx) => (
                             <Reorder.Item 
                               key={field.id} 
                               value={field}
-                              whileDrag={{ 
-                                scale: 1.02,
-                                backgroundColor: "var(--color-surface-container)",
-                                boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+                              layout
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ 
+                                type: "spring", 
+                                damping: 30, 
+                                stiffness: 400,
+                                opacity: { duration: 0.2 }
                               }}
-                              className="flex gap-4 items-center group/field p-2 rounded-3xl transition-colors"
+                              whileDrag={{ 
+                                scale: 1.03,
+                                zIndex: 100,
+                                backgroundColor: "white",
+                                boxShadow: "0 20px 40px -8px rgb(var(--color-primary-rgb) / 0.12)"
+                              }}
+                              className="flex gap-4 items-center group/field p-2 rounded-[32px] transition-all relative"
                             >
-                              <div className="cursor-grab active:cursor-grabbing p-2 text-outline/20 hover:text-primary transition-colors bg-surface-container-low rounded-xl border border-outline-variant/5">
-                                <GripVertical className="w-4 h-4" />
-                              </div>
-                              <div className="flex-grow grid grid-cols-2 gap-4 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5 group-hover/field:border-primary/20 transition-all shadow-sm">
+                              <motion.div 
+                                whileHover={{ scale: 1.1, backgroundColor: "var(--color-primary-container)" }}
+                                whileTap={{ cursor: "grabbing" }}
+                                className="cursor-grab active:cursor-grabbing p-3 text-outline/30 hover:text-primary transition-all bg-white rounded-2xl border border-outline-variant/10 shadow-sm"
+                              >
+                                <GripVertical className="w-5 h-5" />
+                              </motion.div>
+                              <div className="flex-grow grid grid-cols-2 gap-6 p-6 bg-white rounded-[32px] border border-outline-variant/10 group-hover/field:border-primary/30 transition-all shadow-sm group-hover/field:shadow-md">
                                 <input 
                                   value={field.label}
                                   onChange={(e) => {
@@ -272,6 +287,27 @@ export default function NoteTemplates() {
                                   placeholder="Placeholder text"
                                   className="bg-white border-none rounded-xl py-2 px-4 text-xs focus:ring-2 focus:ring-primary/10"
                                 />
+                                <div className="col-span-2 flex items-center justify-between pt-2 border-t border-outline-variant/5">
+                                  <label className="flex items-center gap-2 cursor-pointer group/toggle">
+                                    <div className="relative inline-flex items-center">
+                                      <input 
+                                        type="checkbox" 
+                                        className="sr-only peer"
+                                        checked={field.required}
+                                        onChange={(e) => {
+                                          const newFields = [...selectedTemplate.fields];
+                                          newFields[idx].required = e.target.checked;
+                                          setSelectedTemplate({...selectedTemplate, fields: newFields});
+                                        }}
+                                      />
+                                      <div className="w-8 h-4 bg-outline-variant/30 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-on-surface-variant/60 group-hover/toggle:text-primary transition-colors">Mandatory Field</span>
+                                  </label>
+                                  {field.required && (
+                                    <span className="text-[10px] text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-full">Required</span>
+                                  )}
+                                </div>
                               </div>
                               <button 
                                 onClick={() => {
@@ -307,8 +343,14 @@ export default function NoteTemplates() {
                         <div className="space-y-6">
                           {selectedTemplate.fields.map((field) => (
                             <div key={field.id} className="space-y-3">
-                              <p className="text-sm font-bold text-on-surface">{field.label}</p>
-                              <div className="w-full h-20 bg-surface-container-low rounded-2xl border border-dashed border-outline-variant/20 flex items-center justify-center">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold text-on-surface">{field.label}</p>
+                                {field.required && <span className="text-error text-xs">*</span>}
+                              </div>
+                              <div className={cn(
+                                "w-full h-20 bg-surface-container-low rounded-2xl border flex items-center justify-center transition-all",
+                                field.required ? "border-primary/20 bg-primary/[0.02]" : "border-dashed border-outline-variant/20"
+                              )}>
                                 <p className="text-xs text-on-surface-variant/30 italic">{field.placeholder}</p>
                               </div>
                             </div>

@@ -20,7 +20,9 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
-  FileBarChart
+  FileBarChart,
+  ChevronDown,
+  X as CloseIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/src/lib/utils";
@@ -77,6 +79,23 @@ export default function Billing() {
   const [showSuccess, setShowSuccess] = useState<string | null>(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [methodFilter, setMethodFilter] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const filteredTransactions = transactions.filter(tx => {
+    const matchesSearch = tx.patient.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         tx.method.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || tx.status === statusFilter;
+    const matchesMethod = methodFilter === "all" || tx.method.includes(methodFilter);
+    return matchesSearch && matchesStatus && matchesMethod;
+  });
+
+  const paymentMethods = Array.from(new Set(transactions.map(tx => {
+    if (tx.method.includes("Insurance")) return "Insurance";
+    return tx.method;
+  })));
 
   const handleSendReminder = (id: number) => {
     setSendingReminder(id);
@@ -268,21 +287,95 @@ export default function Billing() {
             exit={{ opacity: 0, x: 20 }}
             className="bg-white rounded-[40px] border border-outline-variant/10 shadow-sm overflow-hidden"
           >
-            <div className="p-10 border-b border-outline-variant/10 flex flex-col sm:flex-row justify-between items-center gap-6">
-              <h3 className="text-2xl font-serif italic text-primary">Recent Transactions</h3>
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="relative flex-grow sm:flex-grow-0">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-outline/50 w-4 h-4" />
-                  <input 
-                    className="bg-surface-container border-none rounded-xl py-2.5 pl-11 pr-6 text-sm w-full sm:w-64 focus:ring-1 focus:ring-primary/20 placeholder:text-outline/60 transition-all" 
-                    placeholder="Search transactions..." 
-                    type="text"
-                  />
+            <div className="p-10 border-b border-outline-variant/10">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+                <h3 className="text-2xl font-serif italic text-primary">Recent Transactions</h3>
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                  <div className="relative flex-grow md:flex-grow-0">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-outline/50 w-4 h-4" />
+                    <input 
+                      className="bg-surface-container border-none rounded-xl py-2.5 pl-11 pr-6 text-sm w-full md:w-64 focus:ring-1 focus:ring-primary/20 placeholder:text-outline/60 transition-all" 
+                      placeholder="Search transactions..." 
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={cn(
+                      "p-2.5 rounded-xl transition-all flex items-center gap-2 text-sm font-bold",
+                      showFilters ? "bg-primary text-white" : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+                    )}
+                  >
+                    <Filter className="w-5 h-5" />
+                    <span className="hidden sm:inline">Filters</span>
+                    {(statusFilter !== "all" || methodFilter !== "all") && (
+                      <span className="w-2 h-2 bg-secondary rounded-full" />
+                    )}
+                  </button>
                 </div>
-                <button className="p-2.5 bg-surface-container rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-all">
-                  <Filter className="w-5 h-5" />
-                </button>
               </div>
+
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 border-t border-outline-variant/5">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest ml-1">Status</label>
+                        <div className="relative">
+                          <select 
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full bg-surface-container border-none rounded-xl py-2.5 px-4 text-sm focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer pr-10"
+                          >
+                            <option value="all">All Statuses</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline/40 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest ml-1">Payment Method</label>
+                        <div className="relative">
+                          <select 
+                            value={methodFilter}
+                            onChange={(e) => setMethodFilter(e.target.value)}
+                            className="w-full bg-surface-container border-none rounded-xl py-2.5 px-4 text-sm focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer pr-10"
+                          >
+                            <option value="all">All Methods</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Self-Pay">Self-Pay</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline/40 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <div className="flex items-end">
+                        <button 
+                          onClick={() => {
+                            setStatusFilter("all");
+                            setMethodFilter("all");
+                            setSearchQuery("");
+                          }}
+                          className="text-xs font-bold text-primary hover:underline underline-offset-4 flex items-center gap-2"
+                        >
+                          <CloseIcon className="w-3 h-3" />
+                          Clear All Filters
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="overflow-x-auto">
@@ -298,7 +391,7 @@ export default function Billing() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {transactions.map((tx) => (
+                  {filteredTransactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-surface-container-low/50 transition-colors group cursor-pointer">
                       <td className="px-10 py-6">
                         <div className="flex items-center gap-4">
@@ -348,9 +441,19 @@ export default function Billing() {
               </table>
             </div>
 
-            <div className="p-8 bg-surface-container-low/30 flex justify-center">
-              <button className="text-sm font-bold text-primary hover:underline underline-offset-4">View All Transactions</button>
-            </div>
+            {filteredTransactions.length === 0 ? (
+              <div className="p-20 text-center">
+                <div className="bg-surface-container w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-outline/20" />
+                </div>
+                <h4 className="text-lg font-serif italic text-on-surface-variant/40">No transactions match your filters</h4>
+                <p className="text-sm text-on-surface-variant/20 mt-2">Try adjusting your search or filter settings.</p>
+              </div>
+            ) : (
+              <div className="p-8 bg-surface-container-low/30 flex justify-center">
+                <button className="text-sm font-bold text-primary hover:underline underline-offset-4">View All Transactions</button>
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div 

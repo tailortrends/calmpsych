@@ -1,6 +1,9 @@
 import { Search, Bell, HelpCircle, Menu } from "lucide-react";
+import { DEFAULT_PROFILE_PIC } from "@/src/constants";
 
 export function TopBar() {
+  const clinicianProfilePic = ""; // Simulating unpicked profile pic
+  
   return (
     <header className="flex justify-between items-center w-full px-12 py-5 sticky top-0 bg-surface/80 backdrop-blur-md z-50 transition-all border-b border-outline-variant/5">
       <div className="flex items-center gap-6">
@@ -28,7 +31,7 @@ export function TopBar() {
           <img 
             alt="Clinician profile" 
             className="w-full h-full object-cover" 
-            src="https://images.unsplash.com/photo-1559839734-2b71f153678f?auto=format&fit=crop&q=80&w=200&h=200" 
+            src={clinicianProfilePic || DEFAULT_PROFILE_PIC} 
             referrerPolicy="no-referrer"
           />
         </div>

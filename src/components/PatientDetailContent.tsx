@@ -30,6 +30,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/src/lib/utils";
 import { useState, Fragment } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { DEFAULT_PROFILE_PIC } from "@/src/constants";
 
 const criticalAlerts = [
   { id: 1, type: "urgent", message: "Urgent: High risk of self-harm - Monitor closely", icon: AlertTriangle },
@@ -91,7 +92,8 @@ const contactHistory = [
     type: "Phone Call", 
     duration: "5 min", 
     subject: "Appointment Rescheduling",
-    details: "Patient called to move next week's session to Thursday at 2 PM due to a work conflict. Rescheduling confirmed and updated in the calendar."
+    details: "Patient called to move next week's session to Thursday at 2 PM due to a work conflict. Rescheduling confirmed and updated in the calendar.",
+    summary: "Work schedule conflict necessitated moving session. Rescheduled to Thursday, Oct 31 at 2:00 PM."
   },
   { 
     id: 2, 
@@ -99,7 +101,8 @@ const contactHistory = [
     type: "Email", 
     duration: "-", 
     subject: "Medication refill request",
-    details: "Received email requesting refill for Sertraline. Verified last appointment was within 30 days. Sent prescription to pharmacy on file."
+    details: "Received email requesting refill for Sertraline. Verified last appointment was within 30 days. Sent prescription to pharmacy on file.",
+    summary: "Sertraline refill approved and electronically sent to Walgreens pharmacy."
   },
   { 
     id: 3, 
@@ -107,7 +110,8 @@ const contactHistory = [
     type: "SMS", 
     duration: "-", 
     subject: "Session confirmation",
-    details: "Automated session confirmation sent for Oct 14 session. Patient replied 'YES' to confirm."
+    details: "Automated session confirmation sent for Oct 14 session. Patient replied 'YES' to confirm.",
+    summary: "Standard automated text confirmation sent and acknowledged by patient."
   },
 ];
 
@@ -125,6 +129,7 @@ interface PatientDetailContentProps {
 export default function PatientDetailContent({ patientId, isModal, onClose }: PatientDetailContentProps) {
   const [expandedSessionId, setExpandedSessionId] = useState<number | null>(null);
   const [expandedContactId, setExpandedContactId] = useState<number | null>(null);
+  const [expandedAppointmentNoteId, setExpandedAppointmentNoteId] = useState<number | null>(null);
   const [appointmentNotes, setAppointmentNotes] = useState(initialAppointmentNotes);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNote, setNewNote] = useState({ date: "", time: "", type: "", content: "" });
@@ -208,8 +213,8 @@ export default function PatientDetailContent({ patientId, isModal, onClose }: Pa
             <div className="relative inline-block mb-6">
               <div className="w-32 h-32 rounded-full overflow-hidden ring-8 ring-primary/5">
                 <img 
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200" 
-                  alt="Julianna Abbott" 
+                  src={DEFAULT_PROFILE_PIC} 
+                  alt="Patient profile" 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
@@ -443,6 +448,34 @@ export default function PatientDetailContent({ patientId, isModal, onClose }: Pa
             </div>
           </section>
 
+          <section className="bg-white rounded-[40px] p-10 border border-outline-variant/10 shadow-sm relative overflow-hidden">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-primary/10 rounded-2xl text-primary shadow-sm shadow-primary/5">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-serif italic text-primary">Appointment History</h3>
+              </div>
+              <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-[0.2em]">{sessionHistory.length} Total Sessions</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {sessionHistory.map((session) => (
+                <div key={session.id} className="group p-5 bg-surface-container-low rounded-[32px] border border-transparent hover:border-primary/20 hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{session.date}</p>
+                      <p className="text-sm font-bold text-on-surface">{session.type}</p>
+                    </div>
+                    <div className="px-3 py-1 bg-white rounded-full text-[10px] font-bold text-on-surface-variant/60 border border-outline-variant/10">
+                      {session.duration}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="bg-white rounded-[40px] border border-outline-variant/10 shadow-sm overflow-hidden">
             <div className="p-10 border-b border-outline-variant/10 flex justify-between items-center">
               <h3 className="text-2xl font-serif italic text-primary">Clinical Timeline</h3>
@@ -489,10 +522,12 @@ export default function PatientDetailContent({ patientId, isModal, onClose }: Pa
                             {session.sentiment}
                           </span>
                         )}
-                        <ChevronDown className={cn(
-                          "w-5 h-5 text-outline/30 transition-transform duration-300",
-                          isExpanded && "rotate-180 text-primary"
-                        )} />
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border border-transparent",
+                          isExpanded ? "bg-primary text-white shadow-lg shadow-primary/20 rotate-180" : "bg-surface-container-highest text-outline/40 group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20"
+                        )}>
+                          <ChevronDown className="w-5 h-5" />
+                        </div>
                       </div>
                     </div>
                     
@@ -512,42 +547,60 @@ export default function PatientDetailContent({ patientId, isModal, onClose }: Pa
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="mt-6 p-6 bg-primary/5 rounded-2xl border border-primary/10">
-                              <div className="flex items-center gap-2 mb-4">
-                                <Sparkles className="w-4 h-4 text-primary" />
-                                <span className="text-xs font-bold text-primary uppercase tracking-widest">AI-Generated Key Takeaways</span>
+                            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                              <div className="p-8 bg-primary/5 rounded-[32px] border border-primary/10 shadow-sm">
+                                <div className="flex items-center gap-2 mb-6">
+                                  <Sparkles className="w-4 h-4 text-primary" />
+                                  <span className="text-xs font-bold text-primary uppercase tracking-widest">Clinical Takeaways</span>
+                                </div>
+                                <ul className="space-y-4">
+                                  {session.takeaways?.map((takeaway, i) => (
+                                    <li key={i} className="flex items-start gap-4">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-primary/40 mt-1.5 shrink-0" />
+                                      <p className="text-sm text-on-surface-variant leading-relaxed italic">"{takeaway}"</p>
+                                    </li>
+                                  ))}
+                                </ul>
                               </div>
-                              <ul className="space-y-3">
-                                {session.takeaways?.map((takeaway, i) => (
-                                  <li key={i} className="flex items-start gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 mt-1.5 shrink-0" />
-                                    <p className="text-sm text-on-surface-variant leading-relaxed italic">"{takeaway}"</p>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
 
-                            <div className="mt-8 flex items-center gap-4">
-                              <button className="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dim transition-all flex items-center gap-2">
-                                View Full Clinical Record
-                                <ChevronRight className="w-3 h-3" />
-                              </button>
-                              <button className="px-6 py-2.5 bg-white border border-outline-variant/20 rounded-xl text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-all flex items-center gap-2">
-                                <Download className="w-3 h-3" />
-                                Download PDF
-                              </button>
+                              <div className="flex flex-col justify-end gap-3 pb-2">
+                                <h5 className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-1 ml-1">Session Actions</h5>
+                                <button className="w-full px-6 py-3.5 bg-primary text-white rounded-2xl text-xs font-bold hover:bg-primary-dim transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/10">
+                                  View Full Detailed Notes
+                                  <ChevronRight className="w-4 h-4" />
+                                </button>
+                                <button className="w-full px-6 py-3.5 bg-white border border-outline-variant/20 rounded-2xl text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-all flex items-center justify-center gap-2">
+                                  <Download className="w-4 h-4" />
+                                  Download EHR PDF
+                                </button>
+                              </div>
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
 
-                    {!isExpanded && (
-                      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span>Click to expand notes</span>
-                        <ChevronDown className="w-3 h-3" />
-                      </div>
-                    )}
+                    <div className="mt-6 flex items-center gap-3">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedSessionId(isExpanded ? null : session.id);
+                        }}
+                        className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest transition-all px-4 py-2 rounded-full border",
+                          isExpanded 
+                            ? "text-primary border-primary bg-primary/5" 
+                            : "text-on-surface-variant/40 border-outline-variant/10 group-hover:text-primary group-hover:border-primary/20"
+                        )}
+                      >
+                        {isExpanded ? "Collapse Note" : "Expand Note Details"}
+                      </button>
+                      {!isExpanded && (
+                        <span className="text-[10px] font-bold text-on-surface-variant/20 uppercase tracking-widest italic flex items-center gap-1">
+                          (Contains {session.takeaways?.length || 0} takeaways)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -621,14 +674,34 @@ export default function PatientDetailContent({ patientId, isModal, onClose }: Pa
                                   className="overflow-hidden"
                                 >
                                   <div className="pb-8 pt-2">
-                                    <div className="p-6 bg-surface-container-low rounded-2xl border border-outline-variant/10">
-                                      <h5 className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-3">Interaction Details</h5>
-                                      <p className="text-sm text-on-surface-variant leading-relaxed">
-                                        {contact.details}
-                                      </p>
-                                      <div className="mt-4 flex gap-4">
-                                        <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Edit Log</button>
-                                        <button className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest hover:text-error transition-colors">Delete</button>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                      <div className="p-6 bg-surface-container-low rounded-2xl border border-outline-variant/10">
+                                        <h5 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+                                          <Sparkles className="w-3 h-3" />
+                                          AI Conversation Summary
+                                        </h5>
+                                        <p className="text-sm text-on-surface font-medium leading-relaxed italic">
+                                          "{contact.summary}"
+                                        </p>
+                                      </div>
+                                      <div className="p-6 bg-white rounded-2xl border border-outline-variant/10 shadow-sm">
+                                        <h5 className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-3">Full Interaction Log</h5>
+                                        <div className="space-y-4">
+                                          <div>
+                                            <p className="text-[8px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-1">Subject</p>
+                                            <p className="text-sm text-on-surface font-bold">{contact.subject}</p>
+                                          </div>
+                                          <div>
+                                            <p className="text-[8px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-1">Transcription/Notes</p>
+                                            <p className="text-sm text-on-surface-variant leading-relaxed">
+                                              {contact.details}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="mt-6 flex gap-4 pt-4 border-t border-outline-variant/5">
+                                          <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Edit Entry</button>
+                                          <button className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest hover:text-error transition-colors">Archive</button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
@@ -737,33 +810,65 @@ export default function PatientDetailContent({ patientId, isModal, onClose }: Pa
             </AnimatePresence>
 
             <div className="space-y-4">
-              {appointmentNotes.map((note) => (
-                <motion.div 
-                  key={note.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-6 bg-surface-container-low rounded-3xl border border-outline-variant/5 hover:border-primary/10 transition-all group"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-on-surface">{note.date}</span>
-                        <span className="text-[10px] text-on-surface-variant/60">{note.time}</span>
+              {appointmentNotes.map((note) => {
+                const isExpanded = expandedAppointmentNoteId === note.id;
+                return (
+                  <motion.div 
+                    key={note.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    onClick={() => setExpandedAppointmentNoteId(isExpanded ? null : note.id)}
+                    className={cn(
+                      "p-6 bg-surface-container-low rounded-[32px] border transition-all group cursor-pointer",
+                      isExpanded ? "border-primary/20 shadow-inner bg-white" : "border-outline-variant/5 hover:border-primary/10"
+                    )}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-on-surface">{note.date}</span>
+                          <span className="text-[10px] text-on-surface-variant/60">{note.time}</span>
+                        </div>
+                        <div className="h-8 w-px bg-outline-variant/20" />
+                        <span className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
+                          {note.type}
+                        </span>
                       </div>
-                      <div className="h-8 w-px bg-outline-variant/20" />
-                      <span className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
-                        {note.type}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(note.content);
+                          }}
+                          className="p-2 text-outline/20 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+                          isExpanded ? "bg-primary text-white rotate-180" : "bg-outline/5 text-outline/40 group-hover:text-primary"
+                        )}>
+                          <ChevronDown className="w-4 h-4" />
+                        </div>
+                      </div>
                     </div>
-                    <button className="p-2 text-outline/20 hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">
-                    {note.content}
-                  </p>
-                </motion.div>
-              ))}
+                    <div className="relative">
+                      <p className={cn(
+                        "text-sm text-on-surface-variant leading-relaxed transition-all duration-300",
+                        !isExpanded && "line-clamp-2"
+                      )}>
+                        {note.content}
+                      </p>
+                      {isExpanded && (
+                        <div className="mt-6 flex gap-3 pt-6 border-t border-outline-variant/5">
+                          <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Edit Assessment</button>
+                          <button className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest hover:text-error transition-colors">Archive Note</button>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
 
